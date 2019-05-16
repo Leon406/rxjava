@@ -4,10 +4,6 @@ package me.leon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rx012.Observable;
-import rx012.Observer;
-import rx012.Subscription;
-import rx012.util.functions.Action1;
-import rx012.util.functions.Func1;
 
 public class T {
     private static final Logger logger = LoggerFactory.getLogger(T.class);
@@ -26,21 +22,45 @@ public class T {
     public static void hello(String... names) {
         Observable.just("hello");
 
-        Observable.toObservable(names)
-                .map(new Func1<String, String>() {
-                    @Override
-                    public String call(String s) {
-                        return " lal  "+s+" lal ";
-                    }
-                })
+        rx012.Observable.toObservable(names)
+                .map(s -> " rx0.1.2  "+s+"  ")
+                .subscribe(s -> System.out.println("Hello " + s + "!"));
 
-                .subscribe(new Action1<String>() {
+        rx050.Observable.toObservable(names)
+                .map(s -> " rx0.5.0  "+s+"   ")
+                .subscribe(s -> System.out.println("Hello " + s + "!"));
 
-            @Override
-            public void call(String s) {
-                System.out.println("Hello " + s + "!");
-            }
+        rx054.Observable.toObservable(names)
+                .map(s -> " rx0.5.4  "+s+"   ")
+                .subscribe(s -> System.out.println("Hello " + s + "!"));
 
-        });
+        rx061.Observable.toObservable(names)
+                .map(s -> " rx0.6.1  "+s+"   ")
+                .subscribe(s -> System.out.println("Hello " + s + "!"));
+
+        rx070.Observable.toObservable(names)
+                .map(s -> " rx0.7.0  "+s+"   ")
+                .subscribe(s -> System.out.println("Hello " + s + "!"));
+        // 变更
+        rx090.Observable.from(names)
+                .map(s -> " rx0.9.0  "+s+"   ")
+                .subscribe(s -> System.out.println("Hello " + s + "!"));
+
+
+        rx0140.Observable.from(names)
+                .map(s -> " rx0.14.0  "+s+"   ")
+                .subscribe(s -> System.out.println("Hello " + s + "!"));
+
+        rx0160.Observable.from(names)
+                .map(s -> " rx0.16.0  "+s+"   ")
+                .subscribe(s -> System.out.println("Hello " + s + "!"));
+
+        rx0200.Observable.from(names)
+                .map(s -> " rx0.20.0  "+s+"   ")
+                .subscribe(s -> System.out.println("Hello " + s + "!"));
+
+        rx100.Observable.from(names)
+                .map(s -> " rx1.0.0  "+s+"   ")
+                .subscribe(s -> System.out.println("Hello " + s + "!"));
     }
 }
