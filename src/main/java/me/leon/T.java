@@ -3,7 +3,7 @@ package me.leon;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rx012.Observable;
+
 
 public class T {
     private static final Logger logger = LoggerFactory.getLogger(T.class);
@@ -20,7 +20,6 @@ public class T {
     }
 
     public static void hello(String... names) {
-        Observable.just("hello");
 
         rx012.Observable.toObservable(names)
                 .map(s -> " rx0.1.2  "+s+"  ")
