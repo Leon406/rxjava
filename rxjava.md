@@ -47,12 +47,6 @@ public static <T> Observable<T> create(Func1<Observer<T>, Subscription> func) {
  //创建后,就持有Func1<Observer<T>, Subscription> 的引用
 ```
 
-```
-toObservable
-just
-create
-```
-
 变换（以map为例）
 
 ```
