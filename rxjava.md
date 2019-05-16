@@ -53,9 +53,52 @@ just
 create
 ```
 
-变换
+变换（以map为例）
 
-订阅  执行
+```
+public static <T, R> Observable<R> map(Observable<T> sequence, Func1<T, R> func) {
+    return _create(OperationMap.map(sequence, func));
+}
+//_create 同create
+ public static <T, R> Func1<Observer<R>, Subscription> map(Observable<T> sequence, Func1<T, R> func) {
+        return new MapObservable<T, R>(sequence, func);
+    }
+    
+     private static class MapObservable<T, R> implements Func1<Observer<R>, Subscription{
+        public MapObservable(Observable<T> sequence, Func1<T, R> func) {
+            this.sequence = sequence;
+            this.func = func;
+        }
+        
+          public Subscription call(Observer<R> observer) {
+            return sequence.subscribe(new MapObserver<T, R>(observer, func));
+        }
+     }
+ 
+ private static class MapObserver<T, R> implements Observer<T> {
+        public MapObserver(Observer<R> observer, Func1<T, R> func) {
+            this.observer = observer;
+            this.func = func;
+        }
+
+        Observer<R> observer;
+
+        Func1<T, R> func;
+
+        public void onNext(T value) {
+            try {
+                observer.onNext(func.call(value));
+               } catch (Exception ex) {
+                 observer.onError(ex);
+               }
+          }
+
+        }
+    }
+
+```
+
+订阅  执行 Func1<Observer<T>, Subscription> 的call 方法
 
 ```
 public Subscription subscribe(Observer<T> observer) {

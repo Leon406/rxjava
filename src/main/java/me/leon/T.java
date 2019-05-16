@@ -9,20 +9,21 @@ public class T {
     private static final Logger logger = LoggerFactory.getLogger(T.class);
     public static void main(String args[]) {
         hello("Ben", "George");
-        logger.info("Current Time: {}", System.currentTimeMillis());
-        logger.info("Current Time: " + System.currentTimeMillis());
-        logger.info("Current Time: {}", System.currentTimeMillis());
-        logger.trace("trace log");
-        logger.warn("warn log");
-        logger.debug("debug log");
-        logger.info("info log");
-        logger.error("error log");
+//        logger.info("Current Time: {}", System.currentTimeMillis());
+//        logger.info("Current Time: " + System.currentTimeMillis());
+//        logger.info("Current Time: {}", System.currentTimeMillis());
+//        logger.trace("trace log");
+//        logger.warn("warn log");
+//        logger.debug("debug log");
+//        logger.info("info log");
+//        logger.error("error log");
     }
 
     public static void hello(String... names) {
 
         rx012.Observable.toObservable(names)
                 .map(s -> " rx0.1.2  "+s+"  ")
+                .filter(predict->predict.length()>4)
                 .subscribe(s -> System.out.println("Hello " + s + "!"));
 
         rx050.Observable.toObservable(names)

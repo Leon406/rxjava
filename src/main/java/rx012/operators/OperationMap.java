@@ -80,10 +80,10 @@ public final class OperationMap {
      *            the type of the output sequence.
      */
     private static class MapObservable<T, R> implements Func1<Observer<R>, Subscription> {
-        public MapObservable(Observable<T> sequence, Func1<T, R> func) {
-            this.sequence = sequence;
-            this.func = func;
-        }
+            public MapObservable(Observable<T> sequence, Func1<T, R> func) {
+                this.sequence = sequence;
+                this.func = func;
+            }
 
         private Observable<T> sequence;
 
