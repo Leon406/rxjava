@@ -1,4 +1,4 @@
-# RxJava 0.1.2 (47个类)
+# RxJava 0.1.2 ( 同0.5.0)(47个类)
 
 ## 四个对象
 
@@ -174,8 +174,6 @@ public Subscription subscribe(Observer<T> observer) {
 
 
 
-## rx0.5.0 与rx0.1.2 基本没差别,同一天release 跳过
-
 ## rx0.5.4   (54个类)
 
 - 新增 2个operators 
@@ -201,3 +199,103 @@ public Subscription subscribe(Observer<T> observer) {
 - 新增两个包  
   - observables       OperatorGroupBy 相关
   - subscriptions      Subscriptions.empty()
+
+
+
+## rx0.7.0 (81个类)    
+
+- 新增6个operator
+  - OperationAll
+  - OperationCombineLatest
+  - OperationObserveOn
+  - OperationSubscribeOn
+  - OperationWhere  (alias to filter)
+  - OperationFinally
+  - OperationTakeWhile  
+- 新增2个 plugin 类  (hook subcribe过程 ) 
+- 新增 接口 scheduler  和concurrency包 (线程调度)
+
+
+
+## rx0.9.0   (98个类)    
+
+- 新增 observables 包下2个类
+- **新增subjects 包下 5个类**
+  - AsyncSubject
+  - BehaviorSubject
+  - PublishSubject
+  - ReplaySubject
+  - UnsubscribeTester
+- 调整部分类的位置 及类名
+- 新增operator
+  - OperationCache
+  - OperationMulticast
+  - OperationInterval
+  - OperationSample
+  - OperationSwitch
+  - OperationTimestamp
+- Remove SLF4J dependency
+
+## rx0.14.0 
+
+- 开始删除部分单元测试
+- 新增operator
+  - Buffer
+  - Count Sum Average
+  -  first and firstOrDefault
+  - Throttle and Debounce
+  - skipWhile and skipWhileWithIndex
+  -  Retry
+  - Distinct  DistinctUntilChanged 
+  - mapWithIndex
+  - ElementAt and ElementAtOrDefault
+  - IsEmpty and Exists (instead of Any)
+- 新增OnSubscribeFunc 替代Observalbe 中的Func1<? super Observer<? super T>, ? extends Subscription> func
+
+
+
+## rx0.16.0   
+
+- 删除项目中单元测试
+- 新增schedulers 包 , 未来取代concurrency
+- 新增joins 包
+- 新增Aciton4-ActionN
+- 新增operator
+  - Cast and OfType
+  - DefaultIfEmpty
+  - Synchronize with object
+  - RefCount
+  - Contains
+  - SkipLast
+  - IgnoreElements
+  -  Empty with scheduler Throw with scheduler 
+  - TimeInterval
+  - Amb
+  - Last
+  - Using
+  - DoOnEach
+  - Min, MinBy, Max, MaxBy
+  - And, Then, When
+  - Join
+  -  toMap/toMultiMap
+  - Collect
+  - Repeat
+  - Skip, SkipLast, Take with time
+  - AsObservable
+  - ...
+
+## rx0.20.0
+
+-  back pressure  支持
+-  新增Producer
+-  OnSubscribeFunc ->OnSubscribe
+-  Simpler Operator Implementations    lift
+-  simplify Schedulers
+-  toBlockingObservable() -> toBlocking() 
+-  operators 移动到internal包
+
+
+
+## rx1.0.0
+
+**rx0.20的最终release 版本**
