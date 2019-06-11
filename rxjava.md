@@ -1,4 +1,4 @@
-# RxJava 0.1.2
+# RxJava 0.1.2 (47个类)
 
 ## 四个对象
 
@@ -28,7 +28,7 @@
 
 ## 流程
 
-Observable 创建     核心create
+### 1 .Observable 创建     核心create
 
 ```
 //Observable 类
@@ -48,7 +48,7 @@ public static <T> Observable<T> create(Func1<Observer<T>, Subscription> func) {
  //创建后,就持有Func1<Observer<T>, Subscription> 的引用
 ```
 
-变换（以map为例）  创建新的MapObservable 并且持有Observable
+### 2.变换（以map为例）  创建新的MapObservable 并且持有Observable
 
 ```
 //Observable 类
@@ -93,7 +93,7 @@ public static <T, R> Observable<R> map(Observable<T> sequence, Func1<T, R> func)
 
 ```
 
-订阅 subscribe  执行 Func1<Observer<T>, Subscription> 的call 方法 ,  
+### 3.订阅 subscribe  执行 Func1<Observer<T>, Subscription> 的call 方法 
 
 ```
 // Observable
@@ -108,7 +108,7 @@ public Subscription subscribe(Observer<T> observer) {
 
 ```
 
- MapObservable 的call 方法
+ MapObservable 的call 方法  直接调用 **事件源** sequence Observable 的 subscribe方法
 
 ```
  public Subscription call(Observer<R> observer) {
@@ -116,11 +116,28 @@ public Subscription subscribe(Observer<T> observer) {
   }
 ```
 
-, 再接着执行Observalbe 的subscribe
 
 
 
-事件开始发送 Observable.toObservable 为例
+
+### 4. 事件源产生  Observable#toObservable
+
+**产生方法**
+
+​	Observable#toObservable
+
+​	Observable#just     间接调用Observable#toObservable
+
+​	Observable#from   间接调用Observable#toObservable
+
+**主要相关类可参考如下,**
+
+- **OperationToObservableFuture         Observable#toObservable**
+- **OperationToObservableIterable       Observable#toObservable**
+- *OperationToObservableList                      Observable#toList (变换)*
+- *OperationToObservableSortedList           Observable#toSortedList (变换)*
+
+#### 以Observable.toObservable 为例
 
 ```
  public static <T> Observable<T> toObservable(T... items) {
@@ -129,13 +146,14 @@ public Subscription subscribe(Observer<T> observer) {
  public static <T> Observable<T> toObservable(Iterable<T> iterable) {
         return _create(OperationToObservableIterable.toObservableIterable(iterable));
     }
-    //具体看OperationToObservableIterable.toObservableIterable  这个func1 call 怎么执行的
+ //具体看OperationToObservableIterable.toObservableIterable  这个func1 call 怎么执行的
 ```
 
 
 
 ```
-// OperationToObservableIterable#toObservableIterable , 当subcribe 的时候, 就会向下游发送事件
+// OperationToObservableIterable#toObservableIterable ,
+//当subcribe 的时候, 就会向下游发送事件 Observer会回调 onNext onCompleted 方法
  private static class ToObservableIterable<T> implements Func1<Observer<T>, Subscription> {
         public ToObservableIterable(Iterable<T> list) {
             this.iterable = list;
@@ -154,3 +172,32 @@ public Subscription subscribe(Observer<T> observer) {
     }
 ```
 
+
+
+## rx0.5.0 与rx0.1.2 基本没差别,同一天release 跳过
+
+## rx0.5.4   (54个类)
+
+- 新增 2个operators 
+  -  OperationTakeLast
+  -  OperationNext
+- 新增plugins 包  RxJavaPlugins 进行全局异常处理 
+- 新增 2个 util  
+  - Exceptions 
+  - Range 
+- Observable#subcribe#onError    默认RxJavaPlugins 进行异常处理
+
+## rx0.6.1  (62个类)
+
+- 新增6个 operator
+  - OperationDefer
+  - OperationDematerialize
+  - OperationMostRecent
+  - OperatorGroupBy
+  - OperatorTakeUntil
+  - OperatorToIterator
+  -  删除 OperationLast (OperationTakeLast 包含 OperationLast)
+
+- 新增两个包  
+  - observables       OperatorGroupBy 相关
+  - subscriptions      Subscriptions.empty()
