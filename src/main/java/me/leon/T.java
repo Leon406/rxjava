@@ -4,12 +4,17 @@ package me.leon;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 
 public class T {
     private static final Logger logger = LoggerFactory.getLogger(T.class);
 
     public static void main(String args[]) {
 //        hello("Ben", "George");
+         final AtomicInteger counter = new AtomicInteger(0);
+        System.out.println(counter.getAndIncrement());
+        System.out.println(counter.get());
         performTest();
 //        logger.info("Current Time: {}", System.currentTimeMillis());
 //        logger.info("Current Time: " + System.currentTimeMillis());

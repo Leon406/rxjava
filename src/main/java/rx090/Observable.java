@@ -166,9 +166,6 @@ public class Observable<T> {
             // the subscribe function can also be overridden but generally that's not the appropriate approach so I won't mention that in the exception
         }
         try {
-            /**
-             * See https://github.com/Netflix/RxJava/issues/216 for discussion on "Guideline 6.4: Protect calls to user code from within an operator"
-             */
             if (isInternalImplementation(observer)) {
                 Subscription s = onSubscribeFunction.call(observer);
                 if (s == null) {

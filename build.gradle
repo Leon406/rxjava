@@ -8,7 +8,7 @@ version '0.0.1'
 sourceCompatibility = 1.8
 
 repositories {
-    maven{url "https://maven.aliyun.com/repository/public" }
+    maven { url "https://maven.aliyun.com/repository/public" }
     mavenCentral()
 }
 
@@ -19,4 +19,6 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.0'
 //    compile 'org.slf4j:slf4j-jdk14:1.7.0'
     compile 'org.slf4j:slf4j-log4j12:1.7.0'
+    //rxjava2
+    compile "org.reactivestreams:reactive-streams:1.0.2"
 }
