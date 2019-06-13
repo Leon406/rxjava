@@ -1,12 +1,12 @@
 /**
  * Copyright 2013 Netflix, Inc.
- * 
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- * 
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -15,19 +15,9 @@
  */
 package rx090.subjects;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
-
 import rx090.Observer;
 import rx090.Subscription;
 import rx090.subscriptions.Subscriptions;
@@ -35,29 +25,33 @@ import rx090.util.functions.Action1;
 import rx090.util.functions.Func0;
 import rx090.util.functions.Func1;
 
+import java.util.*;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
+
 /**
  * Subject that retains all events and will replay them to an {@link Observer} that subscribes.
  * <p>
  * Example usage:
  * <p>
  * <pre> {@code
- 
-  ReplaySubject<Object> subject = ReplaySubject.create();
-  subject.onNext("one");
-  subject.onNext("two");
-  subject.onNext("three");
-  subject.onCompleted();
-  
-  // both of the following will get the onNext/onCompleted calls from above
-  subject.subscribe(observer1);
-  subject.subscribe(observer2);
- 
-  } </pre>
- * 
+
+ReplaySubject<Object> subject = ReplaySubject.create();
+subject.onNext("one");
+subject.onNext("two");
+subject.onNext("three");
+subject.onCompleted();
+
+// both of the following will get the onNext/onCompleted calls from above
+subject.subscribe(observer1);
+subject.subscribe(observer2);
+
+} </pre>
+ *
  * @param <T>
  */
-public final class ReplaySubject<T> extends Subject<T, T>
-{
+public final class ReplaySubject<T> extends Subject<T, T> {
 
     private boolean isDone = false;
     private Exception exception = null;
@@ -73,12 +67,10 @@ public final class ReplaySubject<T> extends Subject<T, T>
         onSubscribe.wrap(new SubscriptionFunc());
     }
 
-    private static final class DelegateSubscriptionFunc<T> implements Func1<Observer<T>, Subscription>
-    {
+    private static final class DelegateSubscriptionFunc<T> implements Func1<Observer<T>, Subscription> {
         private Func1<Observer<T>, Subscription> delegate = null;
 
-        public void wrap(Func1<Observer<T>, Subscription> delegate)
-        {
+        public void wrap(Func1<Observer<T>, Subscription> delegate) {
             if (this.delegate != null) {
                 throw new UnsupportedOperationException("delegate already set");
             }
@@ -86,20 +78,18 @@ public final class ReplaySubject<T> extends Subject<T, T>
         }
 
         @Override
-        public Subscription call(Observer<T> observer)
-        {
+        public Subscription call(Observer<T> observer) {
             return delegate.call(observer);
         }
     }
 
-    private class SubscriptionFunc implements Func1<Observer<T>, Subscription>
-    {
+    private class SubscriptionFunc implements Func1<Observer<T>, Subscription> {
         @Override
         public Subscription call(Observer<T> observer) {
             int item = 0;
             Subscription subscription;
 
-            for (;;) {
+            for (; ; ) {
                 while (item < history.size()) {
                     observer.onNext(history.get(item++));
                 }
@@ -128,11 +118,9 @@ public final class ReplaySubject<T> extends Subject<T, T>
         }
     }
 
-    private class RepeatSubjectSubscription implements Subscription
-    {
+    private class RepeatSubjectSubscription implements Subscription {
         @Override
-        public void unsubscribe()
-        {
+        public void unsubscribe() {
             synchronized (subscriptions) {
                 subscriptions.remove(this);
             }
@@ -140,8 +128,7 @@ public final class ReplaySubject<T> extends Subject<T, T>
     }
 
     @Override
-    public void onCompleted()
-    {
+    public void onCompleted() {
         synchronized (subscriptions) {
             isDone = true;
             for (Observer<T> observer : new ArrayList<Observer<T>>(subscriptions.values())) {
@@ -152,8 +139,7 @@ public final class ReplaySubject<T> extends Subject<T, T>
     }
 
     @Override
-    public void onError(Exception e)
-    {
+    public void onError(Exception e) {
         synchronized (subscriptions) {
             if (isDone) {
                 return;
@@ -168,8 +154,7 @@ public final class ReplaySubject<T> extends Subject<T, T>
     }
 
     @Override
-    public void onNext(T args)
-    {
+    public void onNext(T args) {
         synchronized (subscriptions) {
             history.add(args);
             for (Observer<T> observer : new ArrayList<Observer<T>>(subscriptions.values())) {
@@ -207,8 +192,7 @@ public final class ReplaySubject<T> extends Subject<T, T>
             assertCompletedObserver(o2);
         }
 
-        private void assertCompletedObserver(Observer<String> aObserver)
-        {
+        private void assertCompletedObserver(Observer<String> aObserver) {
             InOrder inOrder = inOrder(aObserver);
 
             inOrder.verify(aObserver, times(1)).onNext("one");
@@ -243,8 +227,7 @@ public final class ReplaySubject<T> extends Subject<T, T>
             assertErrorObserver(aObserver);
         }
 
-        private void assertErrorObserver(Observer<String> aObserver)
-        {
+        private void assertErrorObserver(Observer<String> aObserver) {
             verify(aObserver, times(1)).onNext("one");
             verify(aObserver, times(1)).onNext("two");
             verify(aObserver, times(1)).onNext("three");
@@ -301,8 +284,7 @@ public final class ReplaySubject<T> extends Subject<T, T>
             assertCompletedObserver(anotherObserver);
         }
 
-        private void assertObservedUntilTwo(Observer<String> aObserver)
-        {
+        private void assertObservedUntilTwo(Observer<String> aObserver) {
             verify(aObserver, times(1)).onNext("one");
             verify(aObserver, times(1)).onNext("two");
             verify(aObserver, Mockito.never()).onNext("three");
@@ -311,38 +293,29 @@ public final class ReplaySubject<T> extends Subject<T, T>
         }
 
         @Test
-        public void testUnsubscribe()
-        {
-            UnsubscribeTester.test(new Func0<ReplaySubject<Object>>()
-            {
-                @Override
-                public ReplaySubject<Object> call()
-                {
-                    return ReplaySubject.create();
-                }
-            }, new Action1<ReplaySubject<Object>>()
-            {
-                @Override
-                public void call(ReplaySubject<Object> repeatSubject)
-                {
-                    repeatSubject.onCompleted();
-                }
-            }, new Action1<ReplaySubject<Object>>()
-            {
-                @Override
-                public void call(ReplaySubject<Object> repeatSubject)
-                {
-                    repeatSubject.onError(new Exception());
-                }
-            }, new Action1<ReplaySubject<Object>>()
-            {
-                @Override
-                public void call(ReplaySubject<Object> repeatSubject)
-                {
-                    repeatSubject.onNext("one");
-                }
-            }
-                    );
+        public void testUnsubscribe() {
+            UnsubscribeTester.test(new Func0<ReplaySubject<Object>>() {
+                                       @Override
+                                       public ReplaySubject<Object> call() {
+                                           return ReplaySubject.create();
+                                       }
+                                   }, new Action1<ReplaySubject<Object>>() {
+                                       @Override
+                                       public void call(ReplaySubject<Object> repeatSubject) {
+                                           repeatSubject.onCompleted();
+                                       }
+                                   }, new Action1<ReplaySubject<Object>>() {
+                                       @Override
+                                       public void call(ReplaySubject<Object> repeatSubject) {
+                                           repeatSubject.onError(new Exception());
+                                       }
+                                   }, new Action1<ReplaySubject<Object>>() {
+                                       @Override
+                                       public void call(ReplaySubject<Object> repeatSubject) {
+                                           repeatSubject.onNext("one");
+                                       }
+                                   }
+            );
         }
     }
 }

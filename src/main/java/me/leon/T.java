@@ -3,6 +3,7 @@ package me.leon;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rx090.plugins.RxJavaErrorHandler;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -11,11 +12,11 @@ public class T {
     private static final Logger logger = LoggerFactory.getLogger(T.class);
 
     public static void main(String args[]) {
-//        hello("Ben", "George");
-         final AtomicInteger counter = new AtomicInteger(0);
-        System.out.println(counter.getAndIncrement());
-        System.out.println(counter.get());
-        performTest();
+        hello("Ben", "George");
+//         final AtomicInteger counter = new AtomicInteger(0);
+//        System.out.println(counter.getAndIncrement());
+//        System.out.println(counter.get());
+//        performTest();
 //        logger.info("Current Time: {}", System.currentTimeMillis());
 //        logger.info("Current Time: " + System.currentTimeMillis());
 //        logger.info("Current Time: {}", System.currentTimeMillis());
@@ -44,8 +45,15 @@ public class T {
                 .map(s -> " rx0.7.0  " + s + "   ")
                 .subscribe(s -> System.out.println("Hello " + s + "!"));
         // 变更
+        rx090.plugins.RxJavaPlugins.getInstance().registerErrorHandler(new RxJavaErrorHandler(){
+            @Override
+            public void handleError(Exception e) {
+                System.out.println(  "handle err" +e.getMessage());
+                super.handleError(e);
+            }
+        });
         rx090.Observable.from(names)
-                .map(s -> " rx0.9.0  " + s + "   ")
+                .map(s -> " rx0.9.0  " + s + "   " +Integer.parseInt(s))
                 .subscribe(s -> System.out.println("Hello " + s + "!"));
 
 
@@ -64,6 +72,7 @@ public class T {
         rx100.Observable.from(names)
                 .map(s -> " rx1.0.0  " + s + "   ")
                 .subscribe(s -> System.out.println("Hello " + s + "!"));
+        while (true){}
     }
 
     public static long start = 0;
