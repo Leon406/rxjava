@@ -160,12 +160,12 @@ private void processQueue() {
 
 
 
-### 常用operator解析  ---主要看Fun1 这个类的call 方法
+### 常用operator解析  ---主要看Fun1 这个类的call 方法及对应Observer
 
 - 创建 (不多做介绍 see@ rxjava_0.5.0.md)
   - create      创建  最原始的
-  - just          Observable#toObservable
-  - from        Observable#toObservable
+  - just           单个数据转 Observable#toObservable
+  - from        多个数据转 Observable#toObservable
 - 变换
   - map                              变换 1对1    (不多做介绍 see@ rxjava_0.5.0.md)
   - flatMap                        1对多
@@ -178,7 +178,6 @@ private void processQueue() {
 - 组合
   - concat                            连接
   - merge                             合并
-  - startWith                        开始
   - combineLatest              合并多个Observable 最新的数据
   - zip                                   压缩成Pair
 - 转换 
@@ -193,13 +192,96 @@ private void processQueue() {
 
 ### 变换 mapMany /scan/groupBy
 
-#### mapMany
+#### mapMany 与flatMap等价  注意  Func1<T, Observable<R>> func 返回是Observable
 
 相关类:OperationMap.mapMany-->OperationMerge#merge
 
+```
+ public static <T, R> Func1<Observer<R>, Subscription> mapMany(Observable<T> sequence,           Func1<T, Observable<R>> func) {
+         //create 为 Observable<Observable<T>> 
+        return OperationMerge.merge(Observable.create(map(sequence, func)));
+ }
+```
+
+接下来顺便介绍下merge   ---  将多个Observable 转换成一个Observable
+
+相关类:OperationMerge#merge-->MergeObservable#call-->ParentObserver#onNext
+
+```
+//OperationMerge#merge
+
+return new Func1<Observer<T>, Subscription>() { //这里是匿名内类,看call 方法
+
+   @Override
+   public Subscription call(Observer<T> observer) {
+      return new MergeObservable<T>(o).call(observer);
+  }
+};
+
+ 
+ 
+// MergeObservable#call
+
+.... //同步操作
+
+sequences.subscribe(new ParentObserver(synchronizedObserver));
+
+return subscription;
+
+
+//ParentObserver#onNext(Observable<T> childObservable)  
+ ChildObserver _w = new ChildObserver();
+ childObservers.put(_w, _w);
+ // 每个childObservable分别订阅,这样actualObserver就能收到所有的子Observable事件回调了
+ Subscription _subscription = childObservable.subscribe(_w);
+
+```
+
+
+
 #### scan
 
+相关类：OperationScan#scan-->Accumulator/AccuWithoutInitialValue#call
+
+-->AccumulatingObserver#onNext
+
+```
+//Accumulator 类 AccuWithoutInitialValue不展开介绍
+public Subscription call(final Observer<R> observer) {
+      observer.onNext(initialValue); //先发送初始值
+      return sequence.subscribe(new AccumulatingObserver<T, R>(observer, initialValue,                accumulatorFunction));//包装observer进行累计
+}
+```
+
+```
+ //AccumulatingObserver#onNext
+ public synchronized void onNext(T value) {
+      try {
+          acc = accumulatorFunction.call(acc, value); //上面已经发送了初始值,累计func进行累计
+          observer.onNext(acc); //发送累计的数据
+      } catch (Exception ex) {
+         observer.onError(ex);
+     }
+}
+```
+
+
+
 #### groupBy
+
+相关类:OperationGroupBy#groupBy-->GroupBy#call-->GroupByObserver#onNext
+
+```
+public void onNext(final KeyValue<K, V> args) {
+	K key = args.key;
+	boolean newGroup = keys.putIfAbsent(key, true) == null; 
+	if (newGroup) {  //没有key时创建新组,否则跳过
+		underlying.onNext(buildObservableFor(source, key));
+	}
+}
+
+//buildObservableFor方法 是根据key 生成新的Observable,源码用了filter 过滤满足key的事件,再进行map 转换成value
+```
 
 
 
@@ -207,11 +289,31 @@ private void processQueue() {
 
 #### filter
 
+相关类: OperationFilter#filter-->Filter#call
 
+```
+return subscription.wrap(that.subscribe(new Observer<T>() {
+                public void onNext(T value) {
+                    try {
+                       //filter predicate 函数判断true 才发送事件
+                        if (predicate.call(value)) { 
+                            observer.onNext(value);
+                        }
+                    } catch (Exception ex) {
+                        observer.onError(ex);
+                        subscription.unsubscribe();
+                    }
+                }
 
-#### scan
+                public void onError(Exception ex) {
+                    observer.onError(ex);
+                }
 
-
+                public void onCompleted() {
+                    observer.onCompleted();
+                }
+            }));
+```
 
 #### take
 
@@ -264,13 +366,99 @@ public void onNext(T args) {
 
 #### concat
 
+相关类:OperationConcat#concat-->Concat#call--> 匿名类Observer#onNext
+
+```
+//Concat#call(final Observer<T> observer)
+ final Observer<T> reusableObserver = new Observer<T>() { //
+                @Override
+                public void onNext(T item) {
+                    observer.onNext(item);
+                }
+                @Override
+                public void onError(Exception e) {
+                        ...
+                        observer.onError(e);
+                    }
+                }
+                @Override
+                public void onCompleted() {
+                    synchronized (nextSequences) {
+                        //complete 无nextSequences 结束,否则 轮询下一个进行订阅
+                    	if (nextSequences.isEmpty()) { 
+                            ...
+                            observer.onCompleted();
+                            ...
+                        } else {
+                            innerSubscription = new AtomicObservableSubscription();
+                            //轮询下一个并进行订阅
+                            innerSubscription.wrap(nextSequences.poll().subscribe(this));
+                        }
+                    }
+                }
+            };
+ 
+  outerSubscription.wrap(sequences.subscribe(new Observer<Observable<T>>() {
+                @Override
+                public void onNext(Observable<T> nextSequence) {
+                    synchronized (nextSequences) { //时序同步
+                        if (innerSubscription == null) { //第一次发送时进入,订阅事件
+                            innerSubscription = new AtomicObservableSubscription();
+                            innerSubscription.wrap(nextSequence.subscribe(reusableObserver));
+                        } else {
+                            nextSequences.add(nextSequence); //非首次加入队列后面
+                        }
+                    }
+                }
+```
+
+
+
 #### merge
 
-#### startWith
+相关类:OperationMerge#merge-->MergeObservable#call-->ParentObserver#onNext
+
+```
+//OperationMerge#merge
+
+return new Func1<Observer<T>, Subscription>() { //这里是匿名内类,看call 方法
+
+   @Override
+   public Subscription call(Observer<T> observer) {
+      return new MergeObservable<T>(o).call(observer);
+  }
+};
+
+ 
+ 
+// MergeObservable#call
+
+.... //同步操作
+
+sequences.subscribe(new ParentObserver(synchronizedObserver));
+
+return subscription;
+
+
+//ParentObserver#onNext(Observable<T> childObservable)  
+ ChildObserver _w = new ChildObserver();
+ childObservers.put(_w, _w);
+ // 每个childObservable分别订阅,这样actualObserver就能收到所有的子Observable事件回调了
+ Subscription _subscription = childObservable.subscribe(_w);
+
+```
+
+
 
 #### combineLatest
 
+相关类:OperationCombineLatest#combineLatest-->Aggregatorr#call,addObserver,next
+
+-->CombineObserver#onNext
+
 #### zip
+
+相关类:OperationZip#zip-->Aggregator#call,addObserver,next-->ZipObserver#onNext
 
 
 
@@ -278,4 +466,10 @@ public void onNext(T args) {
 
 #### toList
 
-#### toSortedList
+相关类:OperationToObservableList#toObservableList-->ToObservableList#call-->匿名Observer#onNext
+
+#### toSortedList(与toList基本相同,加了排序func)
+
+相关类:OperationToObservableSortedList#toSortedList-->ToObservableSortedList#call
+
+-->匿名Observer#onNext
