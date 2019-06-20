@@ -454,11 +454,54 @@ return subscription;
 
 相关类:OperationCombineLatest#combineLatest-->Aggregatorr#call,addObserver,next
 
--->CombineObserver#onNext
+​             -->CombineObserver#onNext
 
-#### zip
+```
+//OperationCombineLatest#combineLatest  注意看输入输出参数
+
+ Aggregator<R> a = new Aggregator<R>(Functions.fromFunc(combineLatestFunction));
+ a.addObserver(new CombineObserver<R, T0>(a, w0));
+ a.addObserver(new CombineObserver<R, T1>(a, w1));
+ 
+//Aggregator#addObserver  combine的Observable 存入列表
+  observers.add(w);  //observers 为LinkList
+  
+//当subscribe时会执行 Aggregator#call
+  for (CombineObserver<R, ?> rw : observers) {  //遍历加入的CombineObserver,进行订阅 
+        rw.startWatching();
+  }
+
+//CombineObserver#startWatching
+  subscription = w.subscribe(this); //Observable 订阅自己
+
+//CombineObserver#onNext
+  a.next(this, args);   //将自己传给Aggregator 进行操作
+  
+//Aggregator#onNext
+  latestValue.put(w, arg);  //将CombineObserver 和onNext 值存入map 中
+  hasLatestValue.add(w);   //将CombineObserver 存入set集合中
+  for (CombineObserver<R, ?> rw : observers) { //遍历所有将CombineObserver
+  	if (!hasLatestValue.contains(rw)) { // 没有onNext不执行下一步
+		return;
+	 }
+   }
+   int i = 0;
+   for (CombineObserver<R, ?> _w : observers) {  //遍历所有将CombineObserver
+      argsToCombineLatest[i++] = latestValue.get(_w);// 将最新的值存入数组                                                                   //argsToCombineLatest
+   }
+   //最后,回调变换后的结果
+   observer.onNext(combineLatestFunction.call(argsToCombineLatest));
+```
+
+
+
+#### zip    
 
 相关类:OperationZip#zip-->Aggregator#call,addObserver,next-->ZipObserver#onNext
+
+```
+//与combineLatest  类似,直接看ZipObserver#onNext
+```
 
 
 
