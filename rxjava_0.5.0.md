@@ -1,5 +1,9 @@
 # RxJava 0.5.0 (47个类)
 
+[TOC]
+
+
+
 ## 四个对象
 
 - Observable               被观察者, 生产者, 发布消息
@@ -236,7 +240,7 @@ public Subscription subscribe(Observer<T> observer) {
   - OperationTimestamp
 - Remove SLF4J dependency
 
-## rx0.14.0 
+## rx0.14.0 (118个类)
 
 - 开始删除部分单元测试
 - 新增operator
@@ -254,7 +258,7 @@ public Subscription subscribe(Observer<T> observer) {
 
 
 
-## rx0.16.0   
+## rx0.16.0   (170个类)
 
 - 删除项目中单元测试
 - 新增schedulers 包 , 未来取代concurrency
@@ -284,7 +288,7 @@ public Subscription subscribe(Observer<T> observer) {
   - AsObservable
   - ...
 
-## rx0.20.0
+## rx0.20.0   (215个类)
 
 -  back pressure  支持
 -  新增Producer
@@ -296,6 +300,7 @@ public Subscription subscribe(Observer<T> observer) {
 
 
 
-## rx1.0.0
+## rx1.0.0  (210个类)
 
 **rx0.20的最终release 版本**
+

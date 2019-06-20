@@ -1,5 +1,9 @@
 ## Rxjava 0.9.0
 
+[TOC]
+
+
+
 ### Why this Version
 
 - 类相对较少 98个,学习成本低
@@ -443,6 +447,7 @@ return subscription;
 //ParentObserver#onNext(Observable<T> childObservable)  
  ChildObserver _w = new ChildObserver();
  childObservers.put(_w, _w);
+ 
  // 每个childObservable分别订阅,这样actualObserver就能收到所有的子Observable事件回调了
  Subscription _subscription = childObservable.subscribe(_w);
 
@@ -459,38 +464,38 @@ return subscription;
 ```
 //OperationCombineLatest#combineLatest  注意看输入输出参数
 
- Aggregator<R> a = new Aggregator<R>(Functions.fromFunc(combineLatestFunction));
- a.addObserver(new CombineObserver<R, T0>(a, w0));
- a.addObserver(new CombineObserver<R, T1>(a, w1));
+     Aggregator<R> a = new Aggregator<R>(Functions.fromFunc(combineLatestFunction));
+     a.addObserver(new CombineObserver<R, T0>(a, w0));
+     a.addObserver(new CombineObserver<R, T1>(a, w1));
  
 //Aggregator#addObserver  combine的Observable 存入列表
-  observers.add(w);  //observers 为LinkList
+  	observers.add(w);  //observers 为LinkList
   
 //当subscribe时会执行 Aggregator#call
-  for (CombineObserver<R, ?> rw : observers) {  //遍历加入的CombineObserver,进行订阅 
-        rw.startWatching();
-  }
+      for (CombineObserver<R, ?> rw : observers) {  //遍历加入的CombineObserver,进行订阅 
+            rw.startWatching();
+      }
 
 //CombineObserver#startWatching
-  subscription = w.subscribe(this); //Observable 订阅自己
+  	 subscription = w.subscribe(this); //Observable 订阅自己
 
 //CombineObserver#onNext
-  a.next(this, args);   //将自己传给Aggregator 进行操作
+  	  a.next(this, args);   //将自己传给Aggregator 进行操作
   
 //Aggregator#onNext
-  latestValue.put(w, arg);  //将CombineObserver 和onNext 值存入map 中
-  hasLatestValue.add(w);   //将CombineObserver 存入set集合中
-  for (CombineObserver<R, ?> rw : observers) { //遍历所有将CombineObserver
-  	if (!hasLatestValue.contains(rw)) { // 没有onNext不执行下一步
-		return;
-	 }
-   }
-   int i = 0;
-   for (CombineObserver<R, ?> _w : observers) {  //遍历所有将CombineObserver
-      argsToCombineLatest[i++] = latestValue.get(_w);// 将最新的值存入数组                                                                   //argsToCombineLatest
-   }
-   //最后,回调变换后的结果
-   observer.onNext(combineLatestFunction.call(argsToCombineLatest));
+      latestValue.put(w, arg);  //将CombineObserver 和onNext 值存入map 中
+      hasLatestValue.add(w);   //将CombineObserver 存入set集合中
+      for (CombineObserver<R, ?> rw : observers) { //遍历所有将CombineObserver
+        if (!hasLatestValue.contains(rw)) { // 没有onNext不执行下一步
+            return;
+         }
+      }
+      int i = 0;
+      for (CombineObserver<R, ?> _w : observers) {  //遍历所有将CombineObserver
+         argsToCombineLatest[i++] = latestValue.get(_w);// 将最新的值存入数组                                                                         //argsToCombineLatest
+      }
+      //最后,回调变换后的结果
+      observer.onNext(combineLatestFunction.call(argsToCombineLatest));
 ```
 
 
@@ -500,7 +505,41 @@ return subscription;
 相关类:OperationZip#zip-->Aggregator#call,addObserver,next-->ZipObserver#onNext
 
 ```
-//与combineLatest  类似,直接看ZipObserver#onNext
+//OperationZip#zip
+     Aggregator<R> a = new Aggregator<R>(Functions.fromFunc(zipFunction));
+     a.addObserver(new ZipObserver<R, T0>(a, w0));
+     a.addObserver(new ZipObserver<R, T1>(a, w1));
+ 
+//Aggregator#addObserver  combine的Observable 存入列表
+     observers.add(w);  //observers 为ConcurrentLinkedQueue
+     receivedValuesPerObserver.put(w, new ConcurrentLinkedQueue<Object>());
+
+//当subscribe时会执行 Aggregator#call
+     for (ZipObserver<T, ?> rw : observers) {
+         rw.startWatching();                     // //遍历加入的ZipObserver,进行订阅 
+     }
+ 
+//ZipObserver#startWatching
+ 	subscription.wrap(w.subscribe(this));  //Observable 订阅自己
+ 
+//ZipObserver#onNext
+ 	a.next(this, args);  //将自己传给Aggregator 进行操作
+  
+//Aggregator#onNext
+    receivedValuesPerObserver.get(w).add(arg); //将next的事件加入到ZipObserver 的队列中
+      //receivedValuesPerObserver中每个ZipObserver 都有 数据才会发送事件
+    for (ZipObserver<T, ?> rw : receivedValuesPerObserver.keySet()) {
+        if (receivedValuesPerObserver.get(rw).peek() == null) {
+                 return;                         
+             }
+     }
+          
+     int i = 0;
+     for (ZipObserver<T, ?> rw : observers) {  //打包数据argsToZip
+         argsToZip[i++] = receivedValuesPerObserver.get(rw).remove();
+     }
+     //最后,回调变换后的结果
+     observer.onNext(zipFunction.call(argsToZip));
 ```
 
 
@@ -509,10 +548,53 @@ return subscription;
 
 #### toList
 
-相关类:OperationToObservableList#toObservableList-->ToObservableList#call-->匿名Observer#onNext
+相关类:OperationToObservableList#toObservableList-->ToObservableList#call-->匿名Observer#onNext                        	          onCompleted
+
+```
+//ToObservableList#call
+   return that.subscribe(new Observer<T>() {...})  //直接返回了匿名Observer
+
+//匿名Observer#onNext
+   list.add(value);  //将所有的value 加入到ConcurrentLinkedQueue 队列
+
+//匿名Observer#onCompleted  将LinkedQueue 转成list 交由observer 一并发送
+    ArrayList<T> l = new ArrayList<T>(list.size()); 
+  	for (T t : list) {
+         l.add(t);
+     }
+    observer.onNext(l);
+    observer.onCompleted();
+
+```
+
+
 
 #### toSortedList(与toList基本相同,加了排序func)
 
 相关类:OperationToObservableSortedList#toSortedList-->ToObservableSortedList#call
 
--->匿名Observer#onNext
+-->匿名Observer#onNext onCompleted
+
+```
+//前面流程与toList相同
+//匿名Observer#onCompleted  将LinkedQueue 转成list 交由observer 一并发送
+    ArrayList<T> l = new ArrayList<T>(list.size()); 
+  	for (T t : list) {
+         l.add(t);
+     }
+     
+    //自定义排序函数排序
+    Collections.sort(l, new Comparator<T>() {
+            @Override
+            public int compare(T o1, T o2) {
+                return sortFunction.call(o1, o2);
+            }
+
+     });
+    observer.onNext(l);
+    observer.onCompleted();
+```
+
+
+
+## 终于分析完了~~~~~~~~~~~~~~~~~~~
