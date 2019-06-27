@@ -23,7 +23,7 @@
 
 #### 全局hook 机制   Observable#subscribe
 
-![1560309346361](D:\github\rxjava\img\1560309346361.png)
+![1560309346361](/img/1560309346361.png)
 
 ```
   hook  = RxJavaPlugins.getInstance().getObservableExecutionHook(); //默认是空实现
