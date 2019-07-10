@@ -29,45 +29,45 @@ public class T {
 
     public static void hello(String... names) {
 
-        rx050.Observable.toObservable(names)
-                .map(s -> " rx0.5.0  " + s + "   ")
-                .subscribe(s -> System.out.println("Hello " + s + "!"));
-
-        rx054.Observable.toObservable(names)
-                .map(s -> " rx0.5.4  " + s + "   ")
-                .subscribe(s -> System.out.println("Hello " + s + "!"));
-
-        rx061.Observable.toObservable(names)
-                .map(s -> " rx0.6.1  " + s + "   ")
-                .subscribe(s -> System.out.println("Hello " + s + "!"));
-
-        rx070.Observable.toObservable(names)
-                .map(s -> " rx0.7.0  " + s + "   ")
-                .subscribe(s -> System.out.println("Hello " + s + "!"));
-        // 变更
-        rx090.plugins.RxJavaPlugins.getInstance().registerErrorHandler(new RxJavaErrorHandler(){
-            @Override
-            public void handleError(Exception e) {
-                System.out.println(  "handle err" +e.getMessage());
-                super.handleError(e);
-            }
-        });
-        rx090.Observable.from(names)
-                .map(s -> " rx0.9.0  " + s + "   " +Integer.parseInt(s))
-                .subscribe(s -> System.out.println("Hello " + s + "!"));
-
-
-        rx0140.Observable.from(names)
-                .map(s -> " rx0.14.0  " + s + "   ")
-                .subscribe(s -> System.out.println("Hello " + s + "!"));
-
-        rx0160.Observable.from(names)
-                .map(s -> " rx0.16.0  " + s + "   ")
-                .subscribe(s -> System.out.println("Hello " + s + "!"));
-
-        rx0200.Observable.from(names)
-                .map(s -> " rx0.20.0  " + s + "   ")
-                .subscribe(s -> System.out.println("Hello " + s + "!"));
+//        rx050.Observable.toObservable(names)
+//                .map(s -> " rx0.5.0  " + s + "   ")
+//                .subscribe(s -> System.out.println("Hello " + s + "!"));
+//
+//        rx054.Observable.toObservable(names)
+//                .map(s -> " rx0.5.4  " + s + "   ")
+//                .subscribe(s -> System.out.println("Hello " + s + "!"));
+//
+//        rx061.Observable.toObservable(names)
+//                .map(s -> " rx0.6.1  " + s + "   ")
+//                .subscribe(s -> System.out.println("Hello " + s + "!"));
+//
+//        rx070.Observable.toObservable(names)
+//                .map(s -> " rx0.7.0  " + s + "   ")
+//                .subscribe(s -> System.out.println("Hello " + s + "!"));
+//        // 变更
+//        rx090.plugins.RxJavaPlugins.getInstance().registerErrorHandler(new RxJavaErrorHandler(){
+//            @Override
+//            public void handleError(Exception e) {
+//                System.out.println(  "handle err" +e.getMessage());
+//                super.handleError(e);
+//            }
+//        });
+//        rx090.Observable.from(names)
+//                .map(s -> " rx0.9.0  " + s + "   " +Integer.parseInt(s))
+//                .subscribe(s -> System.out.println("Hello " + s + "!"));
+//
+//
+//        rx0140.Observable.from(names)
+//                .map(s -> " rx0.14.0  " + s + "   ")
+//                .subscribe(s -> System.out.println("Hello " + s + "!"));
+//
+//        rx0160.Observable.from(names)
+//                .map(s -> " rx0.16.0  " + s + "   ")
+//                .subscribe(s -> System.out.println("Hello " + s + "!"));
+//
+//        rx0200.Observable.from(names)
+//                .map(s -> " rx0.20.0  " + s + "   ")
+//                .subscribe(s -> System.out.println("Hello " + s + "!"));
 
         rx100.Observable.from(names)
                 .map(s -> " rx1.0.0  " + s + "   ")
