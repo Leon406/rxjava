@@ -466,14 +466,17 @@ Observable#subscribe
 Observable#lift
 
 ```
- public final <R> Observable<R> lift(final Operator<? extends R, ? super T> lift) {
+#  Observable subscribe 调用 lift.call(o)
+public final <R> Observable<R> lift(final Operator<? extends R, ? super T> lift) {
         return new Observable<R>(new OnSubscribe<R>() {
             @Override
             public void call(Subscriber<? super R> o) {
                 try {
+                    #  lift 后返回的 Subscriber
                     Subscriber<? super T> st = hook.onLift(lift).call(o);
                     try {
                          onStart();
+                         #最后由最原始的 onSubscribe进行回调 Subscriber
                         onSubscribe.call(st);
                     } catch (Throwable e) {
                    
@@ -491,5 +494,43 @@ Observable#lift
             }
         });
     }
+```
+
+OperatorMap
+
+```
+# 构造 传入变换函数
+public OperatorMap(Func1<? super T, ? extends R> transformer) {
+        this.transformer = transformer;
+    }
+    
+ # Subscriber 有参构造,类似链表
+ public Subscriber<? super T> call(final Subscriber<? super R> o) {
+       
+        return new Subscriber<T>(o) {
+
+            @Override
+            public void onCompleted() {
+                o.onCompleted();
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                o.onError(e);
+            }
+
+            @Override
+            public void onNext(T t) {
+                try {
+                    o.onNext(transformer.call(t));
+                } catch (Throwable e) {
+                    onError(OnErrorThrowable.addValueAsLastCause(e, t));
+                }
+            }
+
+        };
+    }   
+
+
 ```
 
