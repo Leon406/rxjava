@@ -540,8 +540,6 @@ public OperatorMap(Func1<? super T, ? extends R> transformer) {
 
 ​        Observable 每进行一个操作符运算,Subscriber 都会包装一层
 
-​       ex: Observable.from  -> take> map  -> subscribe(Subscriber)
-
- 
+​       ex: Observable.from  -> take  -> map  ->  subscribe(Subscriber)
 
 ![](src/res/Rxjava_process_02.jpg)
