@@ -70,9 +70,10 @@ public class T {
 //                .subscribe(s -> System.out.println("Hello " + s + "!"));
 
         rx100.Observable.from(names)
+                .take(2)
                 .map(s -> " rx1.0.0  " + s + "   ")
                 .subscribe(s -> System.out.println("Hello " + s + "!"));
-        while (true){}
+
     }
 
     public static long start = 0;

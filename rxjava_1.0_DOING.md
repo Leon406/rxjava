@@ -258,7 +258,7 @@
 
    就是前面介绍 Func1接口,
 
-   call调用返回Subscriber
+   **call调用返回包装后Subscriber**
 
    所有OperatorXxx操作符都实现Operator 接口
 
@@ -288,9 +288,9 @@
 
 - **lift** 操作
 
-  将Operator  转换成Observable
+  将Operator  转换成新Observable
 
-  Observable#subscribe时  执行 onSubscribe#call(st)    (st 为Operator#call返回的Subscriber)
+  Observable#subscribe时  执行 **上游**   onSubscribe#call(st)    (st 为Operator#call返回的Subscriber)
 
 
 
@@ -476,7 +476,7 @@ public final <R> Observable<R> lift(final Operator<? extends R, ? super T> lift)
                     Subscriber<? super T> st = hook.onLift(lift).call(o);
                     try {
                          onStart();
-                         #最后由最原始的 onSubscribe进行回调 Subscriber
+                         #直接调用上游 subscribe  onSubscribe进行回调 Subscriber
                         onSubscribe.call(st);
                     } catch (Throwable e) {
                    
@@ -496,7 +496,7 @@ public final <R> Observable<R> lift(final Operator<? extends R, ? super T> lift)
     }
 ```
 
-OperatorMap
+ex: OperatorMap
 
 ```
 # 构造 传入变换函数
@@ -507,7 +507,7 @@ public OperatorMap(Func1<? super T, ? extends R> transformer) {
  # Subscriber 有参构造,类似链表
  public Subscriber<? super T> call(final Subscriber<? super R> o) {
        
-        return new Subscriber<T>(o) {
+        return new Subscriber<T>(o) { #Subscriber 包装o, 对onNext进行代理
 
             @Override
             public void onCompleted() {
@@ -534,3 +534,14 @@ public OperatorMap(Func1<? super T, ? extends R> transformer) {
 
 ```
 
+
+
+### 总结  事件流从上到下, Subscriber传递从下到上
+
+​        Observable 每进行一个操作符运算,Subscriber 都会包装一层
+
+​       ex: Observable.from  -> take> map  -> subscribe(Subscriber)
+
+ 
+
+![](src/res/Rxjava_process_02.jpg)
